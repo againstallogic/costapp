@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Express + Node + MySQL example</title>
+    <style>
+      .tables  {
+        font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 50%;
+      }
+
+      .tables td, .tables th {
+        border: 0px solid #ddd;
+        padding: 8px;
+      }
+
+      .tables tr:nth-child(even){background-color: #f2f2f2;}
+
+      .tables tr:hover {background-color: #ddd;}
+
+      .tables th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #ffffff;
+        color: black;
+      }
+      h1 {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cost App with Node + Express + MySQL</h1>
+    <form id = "form">
+      <label for="description"><br>Description:</label><br>
+      <input type="text" id="description" name="description"><br>
+      <label for="amount"><br>Amount:</label><br>
+      <input type="text" id="amount" name="amount">
+      <label for="who_paid"><br>Who Paid:</label><br>
+      <input type="text" id="who_paid" name="who_paid"><br>
+    </form>
+    <input type="submit" id="submit" value="Submit">
+
+    <h1>Expenses</h1>
+    <p id="counter">Loading expense data.</p>
+    <div class="tables">
+      <table id="expenses">
+        <thead>
+
+        </thead>
+      </table>
+      <h1>Balances</h1>
+      <table id="balances">
+        <thead>
+
+        </thead>
+      </table>
+    </div>
+  </body>
+  <script src="client.js"></script>
+</html>
