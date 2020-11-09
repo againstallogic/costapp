@@ -3,8 +3,6 @@
 //npm install --save-dev nodemon
 //sudo npm install -g --force nodemon
 
-//asdfasdfasdf
-
 const mysql = require("mysql");
 const express = require("express");
 var bodyParser = require("body-parser");
@@ -13,20 +11,12 @@ const path = require('path');
 
 var app = express();
 
-//v1
 app.use(bodyParser.json());
-
-//Use body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(express.static('public'));
 app.get("/", (req, res) => {
-  //eji
-  //res.render("index")
   res.sendFile(__dirname + '/index.html');
 });
-
-
 
 app.post('/clicked', (req, res) => {
   const query = 'INSERT INTO clicks(id,clicktime) VALUES (NULL,NOW());';

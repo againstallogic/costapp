@@ -17,6 +17,27 @@ for (let i = 0; i < people.length; i++) {
   form.appendChild(label);
 }
 
+
+
+function daysLeft() {
+  today=Date.now();
+  var trip=new Date("Febrary 28, 2021");
+  if (trip>today) {
+    let time = dhm(trip-today);
+    document.getElementById('days_left').textContent = time;
+  }
+}
+function dhm(ms){
+    days = Math.floor(ms / (24*60*60*1000));
+    daysms=ms % (24*60*60*1000);
+    hours = Math.floor((daysms)/(60*60*1000));
+    hoursms=ms % (60*60*1000);
+    minutes = Math.floor((hoursms)/(60*1000));
+    minutesms=ms % (60*1000);
+    sec = Math.floor((minutesms)/(1000));
+    return days+" days, "+hours+" hours, "+minutes+" minutes, "+sec+" seconds";
+}
+
 //add expenses from form to database
 const submit = document.getElementById('submit');
 submit.addEventListener('click', function(e) {
@@ -57,6 +78,7 @@ function getFormValues() {
 
 //get expenses & totals every second & show
 setInterval(function() {
+  daysLeft();
   get_totals();
   fetch('/get_expenses', {method: 'GET'})
     .then(function(response) {
