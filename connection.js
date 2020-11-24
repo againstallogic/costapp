@@ -1,22 +1,11 @@
 const mysql = require("mysql");
 
-var mysqlConnection = mysql.createConnection({
-  host : "smbpmo.cxuucdxyi05s.us-east-2.rds.amazonaws.com",
-  user : "admin",
-  password : "jaTBB123!",
-  database : "costapp",
+var db_config = {
+  host : "sql217.main-hosting.eu",
+  user : "u566242939_admin",
+  password : "Password1",
+  database : "u566242939_glorifiedexcel",
   multipleStatements : true
-});
+};
 
-mysqlConnection.connect((err)=>{
-  if(!err)
-    {
-      console.log("Connected");
-    }
-  else
-    {
-      console.log("Connection Failed");
-    }
-});
-
-module.exports = mysqlConnection;
+module.exports = db_config;

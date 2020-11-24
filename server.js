@@ -1,12 +1,16 @@
-//install mysql server
-//npm install --save express express-handlebars mysql body-parser
-//npm install --save-dev nodemon
-//sudo npm install -g --force nodemon
+//centralize people
+//soft delete
+//transaction date in form
+//form validation
+//add/delete recipients
+//html tabs
+
 
 const mysql = require("mysql");
 const express = require("express");
+const db_config = require("./connection");
 var bodyParser = require("body-parser");
-const mysqlConnection = require("./connection");
+
 const path = require('path');
 
 var app = express();
@@ -18,20 +22,7 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-app.post('/clicked', (req, res) => {
-  const query = 'INSERT INTO clicks(id,clicktime) VALUES (NULL,NOW());';
-  mysqlConnection.query(query, (err, rows, fields)=>{
-    if(!err)
-      {
-        res.send(rows);
-        console.log('data populated');
-      }
-    else
-      {
-        console.log(err);
-      }
-  })
-})
+
 
 app.post('/add_expense', (req, res) => {
   description = req.body.description;
@@ -59,12 +50,14 @@ app.post('/add_expense', (req, res) => {
   if(req.body.Trevor==true){
     count_recipients+=1;
   }
-  const query = 'INSERT INTO expenses(id,description, amount, who_paid, count_recipients, created, Ben, Brent, James, Taylor, Trevor) VALUES (NULL,"'+description+'",'+amount+',"'+who_paid+'",'+count_recipients+',NOW(),'+ben+','+brent+','+james+','+taylor+','+trevor+');';
+  query = 'INSERT INTO expenses(id,description, amount, who_paid, count_recipients, created, Ben, Brent, James, Taylor, Trevor) VALUES (NULL,"'+description+'",'+amount+',"'+who_paid+'",'+count_recipients+',NOW(),'+ben+','+brent+','+james+','+taylor+','+trevor+');';
+  mysqlConnection = mysql.createConnection(db_config);
   mysqlConnection.query(query, (err, rows, fields)=>{
     if(!err)
       {
         res.send(rows);
         console.log('data populated');
+        mysqlConnection.end();
       }
     else
       {
@@ -74,10 +67,13 @@ app.post('/add_expense', (req, res) => {
 })
 
 app.get('/get_expenses', (req, res) => {
+  mysqlConnection = mysql.createConnection(db_config);
   mysqlConnection.query("SELECT * from expenses", (err, rows, fields)=>{
     if(!err)
       {
         res.send(rows);
+        console.log('data retrieved');
+        mysqlConnection.end();
       }
     else
       {
@@ -86,11 +82,15 @@ app.get('/get_expenses', (req, res) => {
   })
 })
 
-app.get('/get_individuals_debits', (req, res) => {
-  mysqlConnection.query("select sum(amount) debits from expenses where who_paid = 'Ben';", (err, rows, fields)=>{
+app.post('/remove_row', (req, res) => {
+  query = "DELETE FROM expenses where id="+req.body.id+";"
+  mysqlConnection = mysql.createConnection(db_config);
+  mysqlConnection.query(query, (err, rows, fields)=>{
     if(!err)
       {
         res.send(rows);
+        console.log('data deleted');
+        mysqlConnection.end();
       }
     else
       {
@@ -100,4 +100,4 @@ app.get('/get_individuals_debits', (req, res) => {
 })
 
 
-app.listen(3000);
+app.listen(3100);

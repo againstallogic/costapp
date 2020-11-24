@@ -6,6 +6,9 @@ var people = ["Ben", "Brent", "James", "Taylor", "Trevor"];
 form = document.getElementById("form");
 for (let i = 0; i < people.length; i++) {
   var person = people[i];
+  whoPaidSelect = document.getElementById('who_paid');
+  whoPaidSelect.options[whoPaidSelect.options.length] = new Option(person, person);
+  //create recipients checkboxes
   element=document.createElement("INPUT");
   element.type='checkbox';
   element.id = person;
@@ -16,8 +19,53 @@ for (let i = 0; i < people.length; i++) {
   label.innerHTML = " " + person + "<br>";
   form.appendChild(label);
 }
+daysLeft();
+get_show_expenses();
+get_show_balances();
 
 
+//update every 1 seconds
+setInterval(function() {
+  daysLeft();
+}, 1000);
+
+//add expenses from form to database
+const submit = document.getElementById('submit');
+submit.addEventListener('click', function(e) {
+  add_expense();
+});
+
+function add_expense() {
+  let json = getFormValues();
+  fetch('/add_expense', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: json})
+    .then(function(response) {
+      if(response.ok) {
+        console.log('expense successfully recorded');
+        get_show_expenses();
+        get_show_balances();
+        return;
+      }
+      throw new Error('Request failed.');
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+}
+
+function getFormValues() {
+  var obj = new Object();
+   obj.description = document.getElementById("description").value;
+   obj.amount  = document.getElementById("amount").value;
+   obj.who_paid = document.getElementById("who_paid").value;
+   for (let i = 0; i < people.length; i++) {
+     var person = people[i];
+     obj[person] = document.getElementById(person).checked;
+   }
+   var json= JSON.stringify(obj);
+  //clear form
+  document.getElementById("form").reset();
+  return json;
+}
 
 function daysLeft() {
   today=Date.now();
@@ -38,48 +86,7 @@ function dhm(ms){
     return days+" days, "+hours+" hours, "+minutes+" minutes, "+sec+" seconds";
 }
 
-//add expenses from form to database
-const submit = document.getElementById('submit');
-submit.addEventListener('click', function(e) {
-  add_expense();
-});
-
-function add_expense() {
-  console.log('button was clicked');
-  let json = getFormValues();
-  fetch('/add_expense', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: json})
-    .then(function(response) {
-      if(response.ok) {
-        console.log('expense was recorded');
-        return;
-      }
-      throw new Error('Request failed.');
-    })
-    .catch(function(error) {
-      console.log(error);
-    });
-}
-
-function getFormValues() {
-  var obj = new Object();
-   obj.description = document.getElementById("description").value;
-   obj.amount  = document.getElementById("amount").value;
-   obj.who_paid = document.getElementById("who_paid").value;
-   obj.Ben = document.getElementById("Ben").checked;
-   obj.Brent = document.getElementById("Brent").checked;
-   obj.James = document.getElementById("James").checked;
-   obj.Taylor = document.getElementById("Taylor").checked;
-   obj.Trevor = document.getElementById("Trevor").checked;
-   var json= JSON.stringify(obj);
-  //clear form
-  document.getElementById("form").reset();
-  return json;
-}
-
-//get expenses & totals every second & show
-setInterval(function() {
-  daysLeft();
-  get_totals();
+function get_show_expenses() {
   fetch('/get_expenses', {method: 'GET'})
     .then(function(response) {
       if(response.ok) return response.json();
@@ -101,7 +108,7 @@ setInterval(function() {
     .catch(function(error) {
       console.log(error);
     });
-}, 1000);
+}
 
 function addHeader(data) {
   var tbodyRef = document.getElementById('expenses');
@@ -117,22 +124,18 @@ function addHeader(data) {
   cell4.innerHTML = "<b>Who Paid</b>";
   var cell5 = row.insertCell();
   cell5.innerHTML = "<b># Recipients</b>";
-  var cell6 = row.insertCell();
-  cell6.innerHTML = "<b>Ben</b>";
-  var cell7 = row.insertCell();
-  cell7.innerHTML = "<b>Brent</b>";
-  var cell8 = row.insertCell();
-  cell8.innerHTML = "<b>James</b>";
-  var cell9 = row.insertCell();
-  cell9.innerHTML = "<b>Taylor</b>";
-  var cell10 = row.insertCell();
-  cell10.innerHTML = "<b>Trevor</b>";
+  for (let i = 0; i < people.length; i++) {
+    var person = people[i];
+    var cell = row.insertCell();
+    cell.innerHTML = "<b>"+person+"</b>";
+  }
+  var cellLast = row.insertCell();
+  cellLast.innerHTML = "<b>Delete?</b>";
 }
 
 function addRow(data) {
   var tbodyRef = document.getElementById('expenses');
-  var people = ["Ben", "Brent", "James", "Taylor", "Trevor"];
-//for each expense
+  //for each expense
   for (var expense in data) {
     // Insert a row at the end of table
     var newRow = tbodyRef.insertRow();
@@ -149,6 +152,7 @@ function addRow(data) {
         var listperson = people[i];
         if (listperson == key && expense[key]==1) {
           newCell.innerHTML = "X";
+          newCell.style = "text-align:center";
           nomatch = false;
         } else if (listperson == key && expense[key]==0) {
           newCell.innerHTML = "";
@@ -158,15 +162,50 @@ function addRow(data) {
       if (nomatch==true) {
         newCell.innerHTML = expense[key];
       }
-
     }
+    var newCell = newRow.insertCell();
+    newCell.style = "text-align:center";
+    var input = document.createElement("input");
+    input.type = "image";
+    input.name="imgbtn";
+    input.src="trash.png"
+    input.id="delete";
+    input.setAttribute('onclick', 'removeRow(this)');
+
+    //input.appendChild(img);
+    newCell.appendChild(input);
   }
+}
+
+function removeRow(oButton) {
+  //get ID of row where button was clicked
+  var row = oButton.parentNode.parentNode.rowIndex;
+  var id = document.getElementById("expenses").rows[row].cells[0].innerHTML;
+  id = id.toString();
+  var json = new Object();
+  json["id"] = id;
+  json = JSON.stringify(json);
+  fetch('/remove_row', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: json})
+    .then(function(response) {
+      if(response.ok) return response.json();
+      throw new Error('Request failed.');
+    })
+    .then(function(data) {
+      console.log("record successfully removed");
+      get_show_expenses();
+      get_show_balances();
+    })
+    .catch(function(error) {
+      console.log(error);
+    });
+
 }
 
 
 
-async function get_totals() {
-  let balance = await get_balance();
+
+async function get_show_balances() {
+  let balance = await get_balances();
   var tbodyRef = document.getElementById('balances');
   //clear table
   while(tbodyRef.hasChildNodes())
@@ -183,10 +222,12 @@ async function get_totals() {
    var balanceCell = balanceRow.insertCell();
    balanceCell.innerHTML = `${balance[person]}`
   }
+  console.log(balance);
+  get_show_ledger(balance);
+
 }
 
-
-function get_balance() {
+function get_balances() {
   return new Promise((resolve, reject) => {
     fetch('/get_expenses', {method: 'GET'})
       .then(function(response) {
@@ -194,7 +235,6 @@ function get_balance() {
         throw new Error('Request failed.');
       })
       .then(function(data) {
-        var people = ["Ben", "Brent", "James", "Taylor", "Trevor"];
         //create totals object
         var balance = new Object();
         for (var person in people) {
@@ -227,9 +267,86 @@ function get_balance() {
         }
         //return balance
         resolve(balance);
+
+
       })
       .catch(function(error) {
         console.log(error);
       });
   })
 }
+async function get_show_ledger(balance) {
+  let ledger = await calculate_ledger(balance);
+
+  var tbodyRef = document.getElementById('ledger');
+  //clear table
+  while(tbodyRef.hasChildNodes())
+    {
+      tbodyRef.removeChild(tbodyRef.firstChild);
+    }
+  //rebuild table
+  var header = tbodyRef.createTHead();
+  for (record in ledger.records) {
+    Payee = ledger.records[record].Payee;
+    Recipient = ledger.records[record].Recipient;
+    Amount = ledger.records[record].Amount;
+    var ledgerRow = tbodyRef.insertRow();
+    var recordCell = ledgerRow.insertCell();
+    recordCell.innerHTML = Payee + " pays " + Recipient + " $" + Amount;
+  }
+
+}
+function calculate_ledger(balance) {
+  return new Promise((resolve, reject) => {
+  lBalance = balance;
+
+  ledger = new Object();
+  ledger = {"records": []};
+  var totalOutstanding = 0;
+  for (var person in lBalance) {
+    totalOutstanding += Math.abs(lBalance[person]);
+  }
+  //ledger
+  while (totalOutstanding>1) {
+    //find min and max values and people
+    var max = 0;
+    var min = 0;
+    var maxPerson;
+    var minPerson;
+    for (var person in lBalance) {
+      if (lBalance[person] < min) min = lBalance[person];
+      if (lBalance[person] > max) max = lBalance[person];
+    }
+    for (var person in lBalance) {
+      if (lBalance[person] == min) minPerson = person;
+      if (lBalance[person] == max) maxPerson = person;
+    }
+    //get absolute values
+    absMin = Math.abs(min);
+    absMax = Math.abs(max);
+    absolute = Math.min(absMin, absMax);
+    //record in ledger
+    record = new Object();
+    record["Recipient"] = maxPerson;
+    record["Payee"] = minPerson;
+    record["Amount"] = absolute;
+    ledger.records.push(record);
+    //update balances
+    absolute
+    for (var person in lBalance) {
+      if (person == maxPerson) lBalance[person] -= absolute;
+      if (person == minPerson) lBalance[person] += absolute;
+    }
+    //update total outstanding amount
+    totalOutstanding =0;
+    for (var person in lBalance) {
+      totalOutstanding += Math.abs(lBalance[person]);
+    }
+
+  }
+
+  console.log(ledger);
+  resolve(ledger);
+
+
+})}

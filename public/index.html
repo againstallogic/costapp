@@ -13,12 +13,15 @@
     <span id="days_left"></span>
     <form class="form-inline" id = "form">
       <label for="description"><br>Description:</label><br>
-      <input type="text" id="description" name="description"><br>
-      <label for="amount"><br>Amount:</label><br>
-      <input type="text" id="amount" name="amount">
-      <label for="who_paid"><br>Who Paid:</label><br>
-      <input type="text" id="who_paid" name="who_paid"><br>
+      <input type="text" id="description" name="description"><br><br>
+      <label for="amount">Amount:</label><br>
+      <input type="text" id="amount" name="amount"><br><br>
+      <label for="who_paid">Who Paid:</label><br>
+      <select name="who_paid" id="who_paid" form="form">
+      </select><br><br>
+      <label>Recipients: </label><br>
     </form>
+
     <input type="submit" id="submit" value="Submit">
 
     <h1>Expenses</h1>
@@ -31,6 +34,12 @@
       </table>
       <h1>Balances</h1>
       <table id="balances">
+        <thead>
+
+        </thead>
+      </table>
+      <h1>Ledger</h1>
+      <table id="ledger">
         <thead>
 
         </thead>
